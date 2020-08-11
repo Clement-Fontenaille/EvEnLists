@@ -21,7 +21,6 @@ function ItemEntry(){
   this.merge_add = function(item_entry){ 
     if (item_entry.item_name() === this.item_name()){
       for (const k in item_entry.data) {
-        if (k == key_column_name) continue;
         if (this.data[k] == undefined) {
           this.data[k] = item_entry.data[k];
         }
@@ -34,7 +33,6 @@ function ItemEntry(){
   this.merge_sub = function(item_entry){
     if (item_entry.item_name() === this.item_name()){
       for (const k in item_entry.data) {
-        if (k == key_column_name) continue;
         if (this.data[k] == undefined) {
           this.data[k] = -item_entry.data[k];
         }
@@ -48,6 +46,7 @@ function ItemEntry(){
     if (columns_names_array === undefined){
       columns_names_array = Object.keys(this.data);
     }
+    console.log("columns_names_array : " + columns_names_array)
     if (dim === undefined) dim = columns_names_array.length;
     var r = [];
     for (const k in columns_names_array){
