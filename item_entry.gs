@@ -86,9 +86,7 @@ function ItemEntry(){
 function ItemEntry_from_values(values_array, columns_names_array){
   ItemEntry.call(this);
   for (const i in columns_names_array){
-    if (columns_names_array[i] === key_column_name) this.item_name = values_array[i]
-    else this.data[columns_names_array[i]] = values_array[i];
+    this.data[columns_names_array[i]] = values_array[i];
   }
-  if (! "item_name" in this) Logger.log("Warning : ItemEntry_from_values returning with empty item_name")
 }
 
