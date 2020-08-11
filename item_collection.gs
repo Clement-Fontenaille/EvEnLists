@@ -3,8 +3,6 @@ function blankifnull(value){
   return value;
 }
 
-key_column_name = "Item Name"
-
 function tab_print(tab, prefix = ""){
   if (tab === undefined){
     Logger.log(prefix + "undefined");
@@ -21,87 +19,6 @@ function tab_print(tab, prefix = ""){
 function tab_print_2d(tab, prefix = ""){
   for (var i in tab) tab_print(tab[i], prefix);
 }
-// ### ItemEntry ###
-
-// Main ItemEntry constructor and definitions
-function ItemEntry(){
-  Object.call(this);
-  this.data = {};
-  this.item_name = ""
-  
-  // merge_add : 
-  this.merge_add = function(item_entry){ 
-    if (item_entry.item_name === this.item_name){
-      for (const k in item_entry.data) {
-        if (this.data[k] == undefined) {
-          this.data[key_column_name] = item_entry.data[key_column_name];
-        }
-        else this.data[k] += item_entry.data[k];
-      }
-    }
-  }
-  
-  // merge_sub : 
-  this.merge_sub = function(item_entry){
-    if (item_entry.item_name === item_name){
-      for (const k in item_entry.data) {
-        if (this.data[k] == undefined) {
-          this.data[key_column_name] = -item_entry.data[key_column_name];
-        }
-        else this.data[k] -= item_entry.data[k];
-      }
-    }
-  }
-  
-  // asValues : get as 1d array to be used with Range.setValues()
-  this.asValues = function(columns_names_array, dim = undefined){
-    if (columns_names_array === undefined){
-      columns_names_array = [key_column_name] + Object.keys(this.data);
-    }
-    if (dim === undefined) dim = columns_names_array.length;
-    var r = [];
-    for (var k in columns_names_array){
-      r.push(blankifnull(this.data[k]))
-    }
-    for (var i = 0 ; i < dim - columns_names_array.length ; i++){
-      r.push('');
-    }
-    return r;
-  }
-  
-  this.isEmpty = function(cnames){
-    if (! cnames) cnames = Object.keys(this.data);
-    for (var k in cnames){
-      if (this.data[k]) return false;
-    }
-    return true;
-  }
-
-  this.deepcopy = function(aObject){
-    if (!aObject) {
-      return this.deepcopy(this);
-    }
-    var v;
-    var bObject = Array.isArray(aObject) ? [] : {};
-    for (var k in aObject) {
-      v = aObject[k];
-      bObject[k] = (typeof v === "object") ? this.deepcopy(v) : v;
-    }
-    return bObject;
-  }
-
-}
-
-// helper ItemEntry constructor : from an array of values as acquired through Range.getValues()[i]
-function ItemEntry_from_values(values_array, columns_names_array){
-  ItemEntry.call(this);
-  for (const i in columns_names_array){
-    if (columns_names_array[i] === key_column_name) this.item_name = values_array[i]
-    else this.data[columns_names_array[i]] = values_array[i];
-  }
-  if (! "item_name" in this) Logger.log("Warning : ItemEntry_from_values returning with empty item_name")
-}
-
 
 
 
@@ -118,18 +35,16 @@ function ItemCollection() {
   // non-merge add operations appends item at the end of the list (allowing to append an empty line for example)
 
   this.add_item = function(item_entry){
-    var item_name = item_entry.item_name;
     ItemEntry_array.push(item_entry.deepcopy())
-    this.lookup_table[item_name] = this.ItemEntry_array.length -1;
+    this.lookup_table[item_entry.item_name] = this.ItemEntry_array.length -1;
   }
   this.merge_add_item = function(item_entry){
-    var item_name = item_entry.data[key_column_name];
-    if (this.lookup_table[item_name] == undefined){
+    if (this.lookup_table[item_entry.item_name] == undefined){
       this.ItemEntry_array.push(item_entry.deepcopy());
-      this.lookup_table[item_name] = this.ItemEntry_array.length -1;
+      this.lookup_table[item_entry.item_name] = this.ItemEntry_array.length -1;
     }
     else {
-      this.ItemEntry_array[this.lookup_table[item_name]].merge_add(item_entry);
+      this.ItemEntry_array[this.lookup_table[item_entry.item_name]].merge_add(item_entry);
     }
   }
 
@@ -150,13 +65,12 @@ function ItemCollection() {
   }
   // merge_sub_item : 
   this.merge_sub_item = function(item_entry){
-    var item_name = item_entry.data[key_column_name];
-    if (this.lookup_table[item_name] == undefined){
+    if (this.lookup_table[item_entry.item_name] == undefined){
       this.ItemEntry_array.push(item_entry.deepcopy());
-      this.lookup_table[item_name] = this.ItemEntry_array.length -1;
+      this.lookup_table[item_entry.item_name] = this.ItemEntry_array.length -1;
     }
     else {
-      this.ItemEntry_array[this.lookup_table[item_name]].merge_sub(item_entry);
+      this.ItemEntry_array[this.lookup_table[item_entry.item_name]].merge_sub(item_entry);
     }
   }
 
