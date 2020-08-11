@@ -1,7 +1,3 @@
-function blankifnull(value){
-  if (!value) return "";
-  return value;
-}
 
 function tab_print(tab, prefix = ""){
   if (tab === undefined){
@@ -36,15 +32,15 @@ function ItemCollection() {
 
   this.add_item = function(item_entry){
     ItemEntry_array.push(item_entry.deepcopy())
-    this.lookup_table[item_entry.item_name] = this.ItemEntry_array.length -1;
+    this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length -1;
   }
   this.merge_add_item = function(item_entry){
-    if (this.lookup_table[item_entry.item_name] == undefined){
+    if (this.lookup_table[item_entry.item_name()] == undefined){
       this.ItemEntry_array.push(item_entry.deepcopy());
-      this.lookup_table[item_entry.item_name] = this.ItemEntry_array.length -1;
+      this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length -1;
     }
     else {
-      this.ItemEntry_array[this.lookup_table[item_entry.item_name]].merge_add(item_entry);
+      this.ItemEntry_array[this.lookup_table[item_entry.item_name()]].merge_add(item_entry);
     }
   }
 
@@ -65,12 +61,12 @@ function ItemCollection() {
   }
   // merge_sub_item : 
   this.merge_sub_item = function(item_entry){
-    if (this.lookup_table[item_entry.item_name] == undefined){
+    if (this.lookup_table[item_entry.item_name()] == undefined){
       this.ItemEntry_array.push(item_entry.deepcopy());
-      this.lookup_table[item_entry.item_name] = this.ItemEntry_array.length -1;
+      this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length -1;
     }
     else {
-      this.ItemEntry_array[this.lookup_table[item_entry.item_name]].merge_sub(item_entry);
+      this.ItemEntry_array[this.lookup_table[item_entry.item_name()]].merge_sub(item_entry);
     }
   }
 
@@ -205,7 +201,9 @@ function test(){
   Logger.log("  - i1 created : ");
   Logger.log("  i1.asValues = " + i1.asValues(cnames));
   Logger.log("  i1 = " + i1);
-  for (const k in i1){ Logger.log("  -> " + k + " : " + i1[k]); }
+  for (const k in i1){ Logger.log("    -> " + k + " : " + i1[k]); }
+  Logger.log("  i1.data : "}
+  for (const k in i1.data){ Logger.log("     -> " + k + " : " + i1.data[k]); }
   
   var valsa = [vals1, vals2, vals3];
   var c1 = new ItemCollection_from_values_array(valsa, cnames);
