@@ -31,7 +31,7 @@ function ItemEntry(){
   
   // merge_add : 
   this.merge_add = function(item_entry){ 
-    if (item_entry.item_name === item_name){
+    if (item_entry.item_name === this.item_name){
       for (const k in item_entry.data) {
         if (this.data[k] == undefined) {
           this.data[key_column_name] = item_entry.data[key_column_name];
