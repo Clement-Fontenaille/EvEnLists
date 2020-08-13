@@ -202,7 +202,7 @@ function test(){
   Logger.log("  i1.asValues = " + i1.asValues(cnames));
   Logger.log("  i1 = " + i1);
   for (const k in i1){ Logger.log("    -> " + k + " : " + i1[k]); }
-  Logger.log("  i1.data : "}
+  Logger.log("  i1.data : ")
   for (const k in i1.data){ Logger.log("     -> \"" + k + "\" : " + i1.data[k]); }
   
   var valsa = [vals1, vals2, vals3];
