@@ -49,13 +49,14 @@ function ItemEntry(){
       columns_names_array = Object.keys(this.data);
     }
     console.log("ItemEntry.asValues() : columns_names_array : " + columns_names_array)
-    console.log("  (item_name = " + this.item_name() + ")")
-    if (dim === undefined) dim = columns_names_array.length;
+    console.log("  (item_name() = " + this.item_name() + ")")
+    if (! dim) dim = columns_names_array.length;
     var r = [];
     for (const k in columns_names_array){
+      logger.log("k = " + k ", this.data[k] = " + this.data[k])
       r.push(this.data[k])
     }
-    for (var i = 0 ; i < dim - columns_names_array.length ; i++){
+    for (var i = r.length ; i < dim ; i++){
       r.push('');
     }
     return r;

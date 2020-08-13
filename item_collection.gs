@@ -200,8 +200,8 @@ function test(){
   var i1 = new ItemEntry_from_values(vals1, cnames);
   Logger.log("  - i1 created : ");
   Logger.log("  i1.asValues = " + i1.asValues());
-  Logger.log("  i1 = " + i1);
-  for (const k in i1){ Logger.log("    -> " + k + " : " + i1[k]); }
+  // Logger.log("  i1 = " + i1);
+  // for (const k in i1){ Logger.log("    -> " + k + " : " + i1[k]); }
   Logger.log("  i1.data : ")
   for (const k in i1.data){ Logger.log("     -> \"" + k + "\" : " + i1.data[k]); }
   
