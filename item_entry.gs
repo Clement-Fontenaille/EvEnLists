@@ -53,8 +53,8 @@ function ItemEntry(){
     if (! dim) dim = columns_names_array.length;
     var r = [];
     for (const k in columns_names_array){
-      logger.log("k = " + k + ", this.data[k] = " + this.data[k]);
-      r.push(this.data[k]);
+      Logger.log("columns_names_array[k] = " + columns_names_array[k] + ", this.data[k] = " + this.data[k]);
+      r.push(blankifnull(this.data[columns_names_array[k]]));
     }
     for (var i = r.length ; i < dim ; i++){
       r.push('');
