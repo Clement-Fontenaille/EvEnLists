@@ -48,11 +48,12 @@ function ItemEntry(){
     if (columns_names_array === undefined){
       columns_names_array = Object.keys(this.data);
     }
-    console.log("columns_names_array : " + columns_names_array)
+    console.log("ItemEntry.asValues() : columns_names_array : " + columns_names_array)
+    console.log("  (item_name = " + this.item_name() + ")")
     if (dim === undefined) dim = columns_names_array.length;
     var r = [];
     for (const k in columns_names_array){
-      r.push(blankifnull(this.data[k]))
+      r.push(this.data[k])
     }
     for (var i = 0 ; i < dim - columns_names_array.length ; i++){
       r.push('');
