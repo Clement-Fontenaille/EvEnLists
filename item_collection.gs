@@ -31,7 +31,9 @@ function ItemCollection() {
   // non-merge add operations appends item at the end of the list (allowing to append an empty line for example)
 
   this.add_item = function(item_entry){
-    ItemEntry_array.push(item_entry.deepcopy())
+    Logger.log("ItemCollection.add_item(item_entry) : ")
+    Logger.log("  item_entry : ",item_entry)
+    this.ItemEntry_array.push(item_entry.deepcopy())
     this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length -1;
   }
   this.merge_add_item = function(item_entry){
@@ -57,7 +59,7 @@ function ItemCollection() {
     this.add_array(item_collection.ItemEntry_array); 
   }
   this.merge_add_collection = function(item_collection){
-    this.merge_add_array(item_collection.ItemEntry_array); 
+    this.merge_add_array(item_collection.ItemEntry_array);
   }
   // merge_sub_item : 
   this.merge_sub_item = function(item_entry){
@@ -87,7 +89,7 @@ function ItemCollection() {
       if (columns_names_array == undefined){
         dimcols = 0;
         
-        for (var i = 0 ; i < this.ItemEntry_array.length ; i ++)
+        for (const i in this.ItemEntry_array)
           dimcols = Math.max(dimcols, Object.keys(this.ItemEntry_array[i].data).length);
       }
       else dimcols = columns_names_array.length;
@@ -112,7 +114,7 @@ function ItemCollection() {
     var i = 0;
     while (i < this.ItemEntry_array.length){
       var remove_flag = true;
-      for (j in ItemEntry_array){
+      for (const j in ItemEntry_array){
         if (this.ItemEntry_array[i].data[key_column_name] == ItemEntry_array[j].data[key_column_name]){
           remove_flag = false;
           break;
@@ -129,6 +131,14 @@ function ItemCollection() {
     this.filter_array(item_collection.ItemEntry_array);
   }
   
+  // merge duplicates
+  this.deduped = function(){
+    r = new ItemCollection();
+    r.merge_add_collection(this)
+    return r;
+  }
+  
+  // remove empty lines
   this.cleanup = function(cnames = undefined){
     var i = 0;
     while (i < this.ItemEntry_array.length){
@@ -140,11 +150,12 @@ function ItemCollection() {
       }
     }
     this.lookup_table = new Object();
-    for (i = 0 ; i < this.ItemEntry_array.length ; i++){
+    for (const i in this.ItemEntry_array){
       this.lookup_table[this.ItemEntry_array[i].data[key_column_name]] = i;
     }
   }
-
+    
+  // deepcopy
   this.deepcopy = function(aObject){
     if (!aObject) {
       return this.deepcopy(this);
@@ -156,12 +167,15 @@ function ItemCollection() {
     }
     return bObject;
   }
+  
+  // printer
   this.log = function(cnames, prefix=""){
     if (this.ItemEntry_array.length == 0){
       Logger.log(prefix + "empty collection");
       return;
     }
-    tab_print(cnames, prefix);
+    if (! cnames) Logger.log("(undefined cnames)");
+    else tab_print(cnames, prefix);
     tab_print_2d(this.asValues(cnames), prefix);
   }
 }
@@ -170,7 +184,7 @@ function ItemCollection() {
 // helper ItemCollection constructor : from an array of item entries
 function ItemCollection_from_items_array(ItemEntry_array = []) {
   ItemCollection.call(this); // call base constructor
-  this.merge_add_array(ItemEntry_array);
+  this.add_array(ItemEntry_array);
 }
 
 // helper ItemCollection constructor : from an array of values as acquired through Range.getValues()
@@ -189,7 +203,7 @@ function ItemCollection_from_values_array(values_2d_array , columns_names_array)
 
 function test(){
   Logger.log("test : ");
-  
+
   var cnames = [key_column_name, "1", "2", "3"];
   var vals1 =  ["item1", 1, 2, 3];
   var vals2 =  ["item2", 2, 2, 0];
@@ -203,7 +217,7 @@ function test(){
   // Logger.log("  i1 = " + i1);
   // for (const k in i1){ Logger.log("    -> " + k + " : " + i1[k]); }
   Logger.log("  i1.data : ")
-  for (const k in i1.data){ Logger.log("     -> \"" + k + "\" : " + i1.data[k]); }
+  for (const i in i1.data){ Logger.log("     -> \"" + k + "\" : " + i1.data[i]); }
   
   var valsa = [vals1, vals2, vals3];
   var c1 = new ItemCollection_from_values_array(valsa, cnames);

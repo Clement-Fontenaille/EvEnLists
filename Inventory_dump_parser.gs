@@ -7,13 +7,17 @@ var operations_types = {};
 operations_types["site"] = "Sites";
 operations_types["ore"] = "ORE";
 operations_types["gas"] = "Gas";
-operations_types["projets"] = "Materials Listings";
+operations_types["stocks"] = "Stocks";
+operations_types["prod_t3d"] = "Production T3D";
+operations_types["prod_t3c"] = "Production T3C";
 
 var operations_sheets = {};
 operations_sheets["site"] = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(operations_types["site"]);
 operations_sheets["ore"] = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(operations_types["site"]);
 operations_sheets["gas"] = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(operations_types["gas"]);
-operations_sheets["projets"] = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(operations_types["projets"]);
+operations_sheets["stocks"] = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(operations_types["stocks"]);
+operations_sheets["prod_t3d"] = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(operations_types["prod_t3d"]);
+operations_sheets["prod_t3c"] = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(operations_types["prod_t3c"]);
 operations_sheets["prix"] = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Prix");
 
 // names of named ranges in sheets we will be looking for the names of items tracked by the script
@@ -21,13 +25,17 @@ var items_range_names = {}
 items_range_names["site"] = "items_sites";
 items_range_names["ore"] = "items_ore";
 items_range_names["gas"] = "items_gas";
-items_range_names["projets"] = "items_projets";
+items_range_names["prod_t3d"] = "items_prod_t3d";
+items_range_names["prod_t3c"] = "items_prod_t3c";
+items_range_names["stocks"] = "items_stocks";
 
 var expand_item_list = {}
 expand_item_list["site"] = false;
 expand_item_list["ore"] = false;
 expand_item_list["gas"] = false;
-expand_item_list["projets"] = false;
+expand_item_list["stocks"] = false;
+expand_item_list["prod_t3d"] = false;
+expand_item_list["prod_t3c"] = false;
 
 // init range (actual collections of cells) based on named range names
 // edit the corresponding named range in the sheet to update what items are tracked
@@ -47,29 +55,19 @@ function get_submitted_items_collection(dump_range, op_id){
   var cnames = [ "Item Name", op_id ];
   var values_array = dump_range.getValues();
   for (var i in values_array){
+    if (! values_array[i][0]) continue;
     qty_input = values_array[i][1];
-    if (isNumber(qty_input) || qty_input == "") { continue; }
+    if (! qty_input) { values_array[i][1] = 1; continue; }
+    if (isNumber(qty_input)) continue;
     values_array[i][1] = Number(qty_input.replace(/\s|,/g,''));
   }
   return new ItemCollection_from_values_array( values_array, cnames );
 }
 
 function set_submitted_items_collection(dump_range, item_collection, op_id){
-  Logger.log("set_submitted_items_collection : ");
-  Logger.log("dump_range = " + dump_range.getA1Notation());
-  Logger.log("item_collection = ");
   var cnames = [ "Item Name", op_id ];
-  item_collection.log(cnames, "  ");
   dump_range.setValues(item_collection.asValues(cnames, dump_range.getNumRows(), dump_range.getNumColumns()));
 }
-
-
-
-
-
-
-
-
 
 function print_known_items(operation_type){
   Logger.log("   " + operation_type + " : ")
@@ -114,7 +112,7 @@ function add_tracked_item(item_name, items_range, tracked_itemslist){
   }
   if ( new_item_cell == undefined ) {
     var n_new_rows = 10;
-    items_ranges["projets"].getSheet().insertRowsBefore( items_ranges["projets"].getRow() + tracked_itemslist.length - 1, n_new_rows );
+    items_ranges["stocks"].getSheet().insertRowsBefore( items_ranges["stocks"].getRow() + tracked_itemslist.length - 1, n_new_rows );
     tracked_itemslist = items_ranges[operation_type].getDisplayValues(); // refresh items_list, just to make sure
     return add_tracked_item(item_name, items_range, tracked_itemslist);
   }
@@ -125,7 +123,7 @@ function add_tracked_item(item_name, items_range, tracked_itemslist){
 
 // operation type shall be one of the keys of items_ranges, i.e : "site", "ore" or "gas"
 function add_items_to_operation(items_dump_range, operation_type, operation_column){
-  Logger.log("add_items_to_operation : items_dump_range="+range_to_str(items_dump_range)+", operation_type="+operation_type+", operation_column="+operation_column);
+  Logger.log("add_items_to_operation : items_dump_range=" + range_to_str(items_dump_range) + ", operation_type=" + operation_type + ", operation_column=" + operation_column);
   var items_list = items_ranges[operation_type].getDisplayValues();
   var r = {}
   // for each item in dump range (~for each line with a non-blank first cell)
@@ -239,9 +237,20 @@ function resize_op_items_list(operation_type, new_row_count){
 // adds tracked items to operation
 // returns the collection of items that have not been added, if expand_tracked_items is false
 function add_collection_to_operation(dump_collection, operation_type = 'projets'){
+  Logger.log("")
+  Logger.log("add_collection_to_operation : ")
   var op_collection = get_op_collection(operation_type);
+  Logger.log("");
+  Logger.log("op_collection : ");
+  op_collection.log(undefined, "  - ");
   var op_collection_after = op_collection.deepcopy();
+  Logger.log("");
+  Logger.log("op_collection copy : ");
+  op_collection_after.log(undefined, "  - ");
   op_collection_after.merge_add_collection(dump_collection);
+  Logger.log("");
+  Logger.log("op_collection_after : ");
+  op_collection_after.log(undefined, "  - ");
   
   if (expand_item_list[operation_type] == false){
     op_collection_after.filter_collection(op_collection);
@@ -255,14 +264,13 @@ function add_collection_to_operation(dump_collection, operation_type = 'projets'
   item_collection_added_to_op.filter_collection(op_collection_after);
   var r = dump_collection.deepcopy();
   r.merge_sub_collection(item_collection_added_to_op);
-  r.cleanup();
   return r;
 }
 
 
 
 function Submit_inventory_dump(){
-  // INIT
+  // get inventory dump table info
   var max_items = inventory_dump_table.getRange(3,1).getDisplayValue();
   if (max_items == "") max_items = 200;
   else max_items = parseInt(max_items);
@@ -276,9 +284,11 @@ function Submit_inventory_dump(){
   }
   else op_column = parseInt(op_column);
   
+  // get submitted inventory items dump as collection
   var dump_range = inventory_dump_table.getRange(5,1,max_items,5);
   var submitted_item_collection = get_submitted_items_collection(dump_range, op_column);
   submitted_item_collection.cleanup();
+  submitted_item_collection = submitted_item_collection.deduped()
   
   var ui = SpreadsheetApp.getUi();
   // check that op is clear and prompt user if not
@@ -292,17 +302,16 @@ function Submit_inventory_dump(){
 
   // add items
   var result = add_collection_to_operation(submitted_item_collection, op_type);
-  // old
-  // var result = add_items_to_operation(dump_range, op_type, op_column);
-  
-  
+  result.cleanup([op_column])
   
   // delete and collapse lines for matched items.
   set_submitted_items_collection(dump_range, result, op_column);
-
   
-  Logger.log("submitted_item_collection : ");
+  Logger.log("");
+  Logger.log("new submitted_item_collection : ");
   submitted_item_collection.log(["Item Name", op_column], "  - ");
+
+  Logger.log("");
   Logger.log("result : ");
   result.log(["Item Name", op_column], "  - ");
   
@@ -318,6 +327,8 @@ function Submit_inventory_dump(){
 }
 
 
+
+
 /**
  * Copies the list of items in projects to the price sheet
  */
@@ -326,12 +337,86 @@ function update_projects_items_prices(){
   Logger.log("update_projects_items_prices() : items_projet = " + items_projet);
   var new_item_list = update_tracked_items_list(items_projet);
 }
-  
+
+
+// select price estimation model from available data such as in
+// {"result":[{"type_id":36,"average20last":122.61499999999998,"highest20last":125.86999999999998,"lowest20last":118.83999999999999,"volume20last":456938008.95,"order_count20last":1767.05,"sell":143.5,"buy":132.5,"hub":"jita"}
+var eveif_price_estimation_model = "average20last";
+
+function getEstimatedPriceFromEFT(EFTstring){
+  lines=EFTstring.split("\n")
+
+//  for (i in lines){
+//    Logger.log("lines[" + i + "] : " + lines[i]);
+//  }
+  for (var i = 0 ; i < lines.length ; i ++){
+    lines[i] = lines[i].replace(/^(\s|-)+|\s+$/,"");
+    if (lines[i] == ""){
+      lines.splice(i,1);
+      i--;
+    }
+  }
+//  Logger.log("stripped lines : ");
+//  for (i in lines){
+//    Logger.log("lines[" + i + "] : " + lines[i]);
+//  }
+
+  for (i in lines){
+    if(lines[i].match(/^\[/)){
+      // is a EFT header ("[ship type, ship name]")
+      //Logger.log("found eft header : " + lines[i]);
+      lines[i] = lines[i].replace(/\[|\]/,"");
+      lines[i] = lines[i].split(",")[0];
+    }
+    qty_regexp_match = lines[i].match(/(.*)( x\d+)/);
+    if (qty_regexp_match){
+      // is a stack
+      //Logger.log("Line[" + i + "] : is a stack : " + qty_regexp_match)
+      lines[i] = {};
+      lines[i].ItemName = qty_regexp_match[1];
+      lines[i].Qty = Number(qty_regexp_match[2].replace(" x",""));
+    }
+    else {
+      // is not a stack
+      //Logger.log("Line[" + i + "] : is not a stack");
+      item_name = lines[i];
+      lines[i] = {};
+      lines[i].ItemName = item_name;
+      lines[i].Qty = 1;
+    }
+
+    // TODO : async get
+    var evetech_search_url = "https://esi.evetech.net/latest/search/?categories=inventory_type&datasource=tranquility&language=en-us&search=" + encodeURIComponent(lines[i].ItemName) + "&strict=true";
+//    Logger.log(evetech_search_url);
+    var evetech_search = JSON.parse(fetchUrl(evetech_search_url));
+//    Logger.log("line[" + i + "] : " + lines[i].ItemName + " : evetech search yielded " + evetech_search["inventory_type"]);
+    lines[i].ItemId = evetech_search["inventory_type"];
+  }
+
+  //get est.price
+  eveif_prices_url = "https://eveif.fr/api/v1/hub_prices/jita/" + lines.map(x => x.ItemId).join("+");
+  eveif_prices = JSON.parse(fetchUrl(eveif_prices_url));
+  for (i in eveif_prices.result){
+    if (eveif_prices.result[i].type_id != lines[i].ItemId) Logger.log("ERROR type id mismatch : i = " + i + ", eveif_prices.result[i].type_id = " + eveif_prices.result[i].type_id + ", lines[i].ItemId = " + lines[i].ItemId);
+    lines[i].EstPrice = Number(eveif_prices.result[i][eveif_price_estimation_model])
+  }
+
+  total_estimated_price = 0
+  for (i in lines){
+    //Logger.log("Line[" + i + "] : ItemName = " + lines[i].ItemName + ", Qty = " + lines[i].Qty + ", ItemId = " + lines[i].ItemId + ", Est.Price = " + lines[i].EstPrice);
+    total_estimated_price += lines[i].EstPrice * lines[i].Qty;
+  }
+
+  return total_estimated_price
+
+}
 
 
 function test(){
   // Submit_inventory_dump()
-  update_projects_items_prices();
+  //update_projects_items_prices();
+
+
 }
 
 

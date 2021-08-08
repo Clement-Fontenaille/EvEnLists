@@ -22,7 +22,7 @@ function ItemEntry(){
     if (item_entry.item_name() === this.item_name()){
       for (const k in item_entry.data) {
         if (k == key_column_name) continue;
-        if (this.data[k] == undefined) {
+        if (! this.data[k]) {
           this.data[k] = item_entry.data[k];
         }
         else this.data[k] += item_entry.data[k];
@@ -50,8 +50,8 @@ function ItemEntry(){
     }
     if (! dim) dim = columns_names_array.length;
     var r = [];
-    for (const k in columns_names_array){
-      r.push(blankifnull(this.data[columns_names_array[k]]));
+    for (const i in columns_names_array){
+      r.push(blankifnull(this.data[columns_names_array[i]]));
     }
     for (var i = r.length ; i < dim ; i++){
       r.push('');
@@ -61,8 +61,8 @@ function ItemEntry(){
   
   this.isEmpty = function(cnames){
     if (! cnames) cnames = Object.keys(this.data);
-    for (var k in cnames){
-      if (this.data[k]) return false;
+    for (const i in cnames){
+      if (this.data[cnames[i]]) return false;
     }
     return true;
   }
@@ -73,13 +73,26 @@ function ItemEntry(){
     }
     var v;
     var bObject = Array.isArray(aObject) ? [] : {};
-    for (var k in aObject) {
-      v = aObject[k];
-      bObject[k] = (typeof v === "object") ? this.deepcopy(v) : v;
+    for (const i in aObject) {
+      v = aObject[i];
+      bObject[i] = (typeof v === "object") ? this.deepcopy(v) : v;
     }
     return bObject;
   }
-
+  
+  this.log = function(cnames, prefix="", display_cnames = true){
+    if (!cnames) cnames = Object.keys(this.data);
+    if (display_cnames) Logger.log(prefix + cnames)
+    m = "["
+    flag = false
+    for (const i in cnames) {
+      if (flag) m += ", "
+      m += this.data[cnames[i]]
+      flag = true
+    }
+    m += "]"
+    Logger.log(prefix + m)
+  }
 }
 
 // helper ItemEntry constructor : from an array of values as acquired through Range.getValues()[i]
