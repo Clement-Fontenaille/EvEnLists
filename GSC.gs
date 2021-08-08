@@ -17,8 +17,7 @@ gdoc_cache_instance = CacheService.getDocumentCache();
 /**
  * Private helper function that is used to initialize the refresh token
  */
-function initializeGetMarketPrice()
-{
+function initializeGetMarketPrice() {
   // Test PLEX in Dodixie
   var itemId = 29668;
   var regionId = 10000032;
@@ -40,17 +39,13 @@ function initializeGetMarketPrice()
 /**
  * Private helper method that performs a basic comparison of two objects.
  */
-function basicCompare(object1, object2)
-{
+function basicCompare(object1, object2) {
   var comparison = 0;
-  if (object1[sortIndex] != null && object2[sortIndex] != null)
-  {
-    if (object1[sortIndex] < object2[sortIndex])
-    {
+  if (object1[sortIndex] != null && object2[sortIndex] != null) {
+    if (object1[sortIndex] < object2[sortIndex]) {
       comparison = -1;
     }
-    else if (object1[sortIndex] > object2[sortIndex])
-    {
+    else if (object1[sortIndex] > object2[sortIndex]) {
       comparison = 1;
     }
   }
@@ -67,8 +62,7 @@ function basicCompare(object1, object2)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function countStationOrders(itemId, regionId, stationId, orderType, refresh)
-{
+function countStationOrders(itemId, regionId, stationId, orderType, refresh) {
   var ordersNumber = 0;
 
   var options = [
@@ -79,7 +73,7 @@ function countStationOrders(itemId, regionId, stationId, orderType, refresh)
     ['orderType', orderType],
     ['refresh', refresh]
   ];
-  
+
   var orders = getOrdersAdv(options);
   return orders.length;
 }
@@ -94,8 +88,7 @@ function countStationOrders(itemId, regionId, stationId, orderType, refresh)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function countStationVolume(itemId, regionId, stationId, orderType, refresh)
-{
+function countStationVolume(itemId, regionId, stationId, orderType, refresh) {
   var ordersNumber = 0;
 
   var options = [
@@ -106,11 +99,10 @@ function countStationVolume(itemId, regionId, stationId, orderType, refresh)
     ['orderType', orderType],
     ['refresh', refresh]
   ];
-  
+
   var availableVolume = 0;
   var orders = getOrdersAdv(options);
-  for (var row = 0; row < orders.length; row++)
-  {
+  for (var row = 0; row < orders.length; row++) {
     availableVolume += orders[row][2];
   }
   return availableVolume;
@@ -124,16 +116,14 @@ function countStationVolume(itemId, regionId, stationId, orderType, refresh)
  * @param {url} url The URL to contact
  * @param {options} options The fetch options to utilize in the request
  */
-function fetchUrl(url)
-{
-  if (gcsGetLock())
-  {
+function fetchUrl(url) {
+  if (gcsGetLock()) {
     // Make the service call
-    headers = {"User-Agent": "Google Crest Script version " + version + " (/u/nuadi @Reddit.com)"}
-    params = {"headers": headers}
+    headers = { "User-Agent": "Google Crest Script version " + version + " (/u/nuadi @Reddit.com)" }
+    params = { "headers": headers }
     httpResponse = UrlFetchApp.fetch(url, params);
   }
-    
+
   return httpResponse;
 }
 
@@ -146,16 +136,12 @@ function fetchUrl(url)
  * Once it finds one, that n-th semaphore is set to TRUE and the function returns.
  * If no semaphore is open, the function sleeps 0.1 seconds before trying again.
  */
-function gcsGetLock()
-{
+function gcsGetLock() {
   var NLocks = 150;
   var lock = false;
-  while (!lock)
-  {
-    for (var nLock = 0; nLock < NLocks; nLock++)
-    {
-      if (gdoc_cache_instance.get('GCSLock' + nLock) == null)
-      {
+  while (!lock) {
+    for (var nLock = 0; nLock < NLocks; nLock++) {
+      if (gdoc_cache_instance.get('GCSLock' + nLock) == null) {
         gdoc_cache_instance.put('GCSLock' + nLock, true, 1)
         lock = true;
         break;
@@ -172,29 +158,24 @@ function gcsGetLock()
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value
  * @customfunction
  */
-function getAdjustedPrice(itemId, refresh)
-{
+function getAdjustedPrice(itemId, refresh) {
   var dataKey = itemId + 'adjustedPrice' + refresh;
   var adjustedPrice = gdoc_cache_instance.get(dataKey);
-  if (adjustedPrice == null)
-  {
+  if (adjustedPrice == null) {
     var sixHours = 60 * 60 * 6; // in seconds
     var marketPriceEndpoint = 'https://crest-tq.eveonline.com/market/prices/';
     var marketPriceData = JSON.parse(fetchUrl(marketPriceEndpoint));
     var itemPrices = marketPriceData['items'];
-    for (var row = 0; row < itemPrices.length; row++)
-    {
+    for (var row = 0; row < itemPrices.length; row++) {
       var itemPriceData = itemPrices[row];
-      if (itemId == itemPriceData['type']['id'])
-      {
+      if (itemId == itemPriceData['type']['id']) {
         adjustedPrice = itemPriceData['adjustedPrice'];
         gdoc_cache_instance.put(dataKey, adjustedPrice, sixHours);
         break;
       }
     }
   }
-  else
-  {
+  else {
     adjustedPrice = Number(adjustedPrice);
   }
 
@@ -211,8 +192,7 @@ function getAdjustedPrice(itemId, refresh)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value
  * @customfunction
  */
-function getAverageDailyOrders(regionId, itemId, days, refresh)
-{
+function getAverageDailyOrders(regionId, itemId, days, refresh) {
   var options = [
     ['days', days],
     ['headers', false],
@@ -223,12 +203,10 @@ function getAverageDailyOrders(regionId, itemId, days, refresh)
   var historicalData = getHistoryAdv(options);
 
   var totalOrders = 0;
-  if (historicalData.length != days)
-  {
+  if (historicalData.length != days) {
     days = historicalData.length;
   }
-  for (var rowNumber = 0; rowNumber < historicalData.length; rowNumber++)
-  {
+  for (var rowNumber = 0; rowNumber < historicalData.length; rowNumber++) {
     totalOrders += historicalData[rowNumber][2];
   }
   return totalOrders / days;
@@ -244,8 +222,7 @@ function getAverageDailyOrders(regionId, itemId, days, refresh)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value
  * @customfunction
  */
-function getAverageDailyVolume(regionId, itemId, days, refresh)
-{
+function getAverageDailyVolume(regionId, itemId, days, refresh) {
   var options = [
     ['days', days],
     ['headers', false],
@@ -256,12 +233,10 @@ function getAverageDailyVolume(regionId, itemId, days, refresh)
   var historicalData = getHistoryAdv(options);
 
   var totalVolume = 0;
-  if (historicalData.length != days)
-  {
+  if (historicalData.length != days) {
     days = historicalData.length;
   }
-  for (var rowNumber = 0; rowNumber < historicalData.length; rowNumber++)
-  {
+  for (var rowNumber = 0; rowNumber < historicalData.length; rowNumber++) {
     totalVolume += historicalData[rowNumber][1];
   }
   return totalVolume / days;
@@ -275,42 +250,34 @@ function getAverageDailyVolume(regionId, itemId, days, refresh)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function getCostIndex(systemName, activity, refresh)
-{
+function getCostIndex(systemName, activity, refresh) {
   var dataKey = systemName + activity + 'costIndex' + refresh;
   var costIndex = gdoc_cache_instance.get(dataKey);
-  if (costIndex == null)
-  {
+  if (costIndex == null) {
     var sixHours = 60 * 60 * 6; // in seconds
     var industrySystemsEndpoint = 'https://crest-tq.eveonline.com/industry/systems/';
     var industrySystemsData = JSON.parse(fetchUrl(industrySystemsEndpoint));
     var costIndices = industrySystemsData['items'];
-    for (var row = 0; row < costIndices.length; row++)
-    {
+    for (var row = 0; row < costIndices.length; row++) {
       var costIndexData = costIndices[row];
-      if (systemName == costIndexData['solarSystem']['name'])
-      {
+      if (systemName == costIndexData['solarSystem']['name']) {
         //return 'name found';
         var systemIndices = costIndexData['systemCostIndices'];
-        for (var arow = 0; arow < systemIndices.length; arow++)
-        {
+        for (var arow = 0; arow < systemIndices.length; arow++) {
           var activityData = systemIndices[arow];
-          if (activity == activityData['activityName'])
-          {
+          if (activity == activityData['activityName']) {
             costIndex = activityData['costIndex'];
             gdoc_cache_instance.put(dataKey, costIndex, sixHours);
             break;
           }
         }
-        if (costIndex != null)
-        {
+        if (costIndex != null) {
           break;
         }
       }
     }
   }
-  else
-  {
+  else {
     costIndex = Number(costIndex);
   }
 
@@ -324,8 +291,7 @@ function getCostIndex(systemName, activity, refresh)
  * @param {options} options see README in GitHub repo.
  * @customfunction
  */
-function getHistoryAdv(options)
-{
+function getHistoryAdv(options) {
   var days = null;
   var itemId = null;
   var regionId = null;
@@ -334,58 +300,45 @@ function getHistoryAdv(options)
   sortIndex = 0;
   sortOrder = -1;
 
-  if (options.length <= 0)
-  {
+  if (options.length <= 0) {
     throw new Error("No options found");
   }
-  else if (options[0] == null || options[0].length < 2)
-  {
+  else if (options[0] == null || options[0].length < 2) {
     throw new Error("Options must have 2 columns");
   }
 
-  for (var row = 0; row < options.length; row++)
-  {
-    for (var col = 0; col < options[row].length; col++)
-    {
+  for (var row = 0; row < options.length; row++) {
+    for (var col = 0; col < options[row].length; col++) {
       var optionKey = options[row][col];
       var optionValue = options[row][++col];
-      if (optionValue === '')
-      {
+      if (optionValue === '') {
         continue;
       }
-      else if (optionKey == 'days')
-      {
+      else if (optionKey == 'days') {
         days = optionValue;
       }
-      else if (optionKey == 'headers')
-      {
+      else if (optionKey == 'headers') {
         showHeaders = optionValue;
       }
-      else if (optionKey == 'itemId')
-      {
+      else if (optionKey == 'itemId') {
         itemId = optionValue;
       }
-      else if (optionKey == 'regionId')
-      {
+      else if (optionKey == 'regionId') {
         regionId = optionValue;
       }
-      else if (optionKey == 'sortIndex')
-      {
+      else if (optionKey == 'sortIndex') {
         sortIndex = optionValue;
       }
-      else if (optionKey == 'sortOrder')
-      {
+      else if (optionKey == 'sortOrder') {
         sortOrder = optionValue;
       }
     }
   }
 
-  if (itemId == null)
-  {
+  if (itemId == null) {
     throw new Error('No "itemId" option found');
   }
-  else if (regionId == null)
-  {
+  else if (regionId == null) {
     throw new Error('No "regionId" option found');
   }
 
@@ -393,17 +346,15 @@ function getHistoryAdv(options)
 
   var headers = ['Date', 'Volume', 'Orders', 'Low', 'High', 'Average'];
 
-  if (showHeaders == true)
-  {
+  if (showHeaders == true) {
     historyReturn.push(headers);
   }
 
   var cuttoffDate = null;
-  if (days != null)
-  {
+  if (days != null) {
     var rightNow = new Date();
     var utcTimestamp = Date.UTC(rightNow.getUTCFullYear(), rightNow.getUTCMonth(), rightNow.getUTCDate());
-    cuttoffDate = utcTimestamp - days*24*60*60*1000;
+    cuttoffDate = utcTimestamp - days * 24 * 60 * 60 * 1000;
   }
 
   var historyEndpoint = 'https://crest-tq.eveonline.com/market/' + regionId + '/history/';
@@ -413,51 +364,41 @@ function getHistoryAdv(options)
   var historicalData = historyJson['items'];
 
   var history = [];
-  for (var itemIndex in historicalData)
-  {
+  for (var itemIndex in historicalData) {
     var historicalItem = historicalData[itemIndex];
     var newRow = [];
     var saveRow = true;
-    for (var name in historicalItem)
-    {
+    for (var name in historicalItem) {
       var historyValue = historicalItem[name];
-      if (name == 'date')
-      {
+      if (name == 'date') {
         var dateValues = historyValue.split(/[T-]/);
-        var dateString = dateValues.slice(0,3).join('/') + ' ' + dateValues[3];
+        var dateString = dateValues.slice(0, 3).join('/') + ' ' + dateValues[3];
         Logger.log('Converting date (' + historyValue + ') string: ' + dateString);
         newRow[0] = new Date(dateString);
 
-        if (cuttoffDate != null && cuttoffDate > newRow[0].getTime())
-        {
+        if (cuttoffDate != null && cuttoffDate > newRow[0].getTime()) {
           saveRow = false;
           break;
         }
       }
-      else if (name == 'volume')
-      {
+      else if (name == 'volume') {
         newRow[1] = historyValue;
       }
-      else if (name == 'orderCount')
-      {
+      else if (name == 'orderCount') {
         newRow[2] = historyValue;
       }
-      else if (name == 'lowPrice')
-      {
+      else if (name == 'lowPrice') {
         newRow[3] = historyValue;
       }
-      else if (name == 'highPrice')
-      {
+      else if (name == 'highPrice') {
         newRow[4] = historyValue;
       }
-      else if (name == 'avgPrice')
-      {
+      else if (name == 'avgPrice') {
         newRow[5] = historyValue;
       }
     }
 
-    if (saveRow)
-    {
+    if (saveRow) {
       history.push(newRow);
     }
   }
@@ -473,12 +414,10 @@ function getHistoryAdv(options)
  * @param {itemId} itemId the item ID of the product to look up
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  */
-function getItemInfo(itemId, refresh)
-{
+function getItemInfo(itemId, refresh) {
   var itemDataArray = [];
   var itemData = getItemJson(itemId, refresh);
-  for (var key in itemData)
-  {
+  for (var key in itemData) {
     var newRow = [key, itemData[key]];
     itemDataArray.push(newRow);
   }
@@ -491,8 +430,7 @@ function getItemInfo(itemId, refresh)
  * @param {itemId} itemId the item ID of the product to look up
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  */
-function getItemJson(itemId, refresh)
-{
+function getItemJson(itemId, refresh) {
   var itemEndpoint = 'https://crest-tq.eveonline.com/inventory/types/' + itemId + '/';
   var itemData = JSON.parse(fetchUrl(itemEndpoint));
   return itemData;
@@ -505,8 +443,7 @@ function getItemJson(itemId, refresh)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function getItemVolume(itemId, refresh)
-{
+function getItemVolume(itemId, refresh) {
   var itemData = getItemJson(itemId, refresh);
   return itemData['volume'];
 }
@@ -519,30 +456,25 @@ function getItemVolume(itemId, refresh)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function getMarketGroupItems(groupId, refresh)
-{
+function getMarketGroupItems(groupId, refresh) {
   var groupTypesEndpoint = 'https://crest-tq.eveonline.com/market/types/?group=https://crest-tq.eveonline.com/market/groups/' + groupId + '/';
 
   var groupItemList = [];
 
   var paging = true;
-  while (paging)
-  {
+  while (paging) {
     var groupTypesJson = JSON.parse(fetchUrl(groupTypesEndpoint));
     var groupTypes = groupTypesJson['items'];
 
-    for (var itemHandle in groupTypes)
-    {
+    for (var itemHandle in groupTypes) {
       var marketItem = groupTypes[itemHandle];
       groupItemList.push([marketItem['type']['name'], marketItem['type']['id']]);
     }
 
-    if (groupTypesJson['next'] != null)
-    {
+    if (groupTypesJson['next'] != null) {
       groupTypesEndpoint = groupTypesJson['next']['href'];
     }
-    else
-    {
+    else {
       paging = false;
     }
   }
@@ -564,32 +496,27 @@ function getMarketGroupItems(groupId, refresh)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function getMarketGroups(groupId, refresh)
-{
+function getMarketGroups(groupId, refresh) {
   var marketGroupEndpoint = 'https://crest-tq.eveonline.com/market/groups/';
   var marketGroupJson = JSON.parse(fetchUrl(marketGroupEndpoint));
   var marketGroups = marketGroupJson['items'];
 
   var marketGroupList = [];
 
-  for (var groupHandle in marketGroups)
-  {
+  for (var groupHandle in marketGroups) {
     var marketGroup = marketGroups[groupHandle];
 
     var pushGroup = false;
-    if (groupId == null || groupId == '')
-    {
+    if (groupId == null || groupId == '') {
       // Only push base groups
       pushGroup = marketGroup['parentGroup'] == null;
     }
-    else
-    {
+    else {
       // Only push children of this group
       pushGroup = marketGroup['parentGroup'] != null && marketGroup['parentGroup']['id'] == groupId
     }
-    
-    if (pushGroup)
-    {
+
+    if (pushGroup) {
       marketGroupList.push([marketGroup['name'], marketGroup['id']]);
     }
   }
@@ -612,8 +539,7 @@ function getMarketGroups(groupId, refresh)
  * @param {column} column the name of the historical column you are trying to access; "orderCount", "lowPrice", "highPrice", "avgPrice", "volume"
  * @customfunction
  */
-function getMarketHistory(itemId, regionId, column)
-{
+function getMarketHistory(itemId, regionId, column) {
   var propIndices = {
     'volume': 1,
     'orderCount': 2,
@@ -622,8 +548,7 @@ function getMarketHistory(itemId, regionId, column)
     'avgPrice': 5
   };
 
-  if (!propIndices[column] > 0)
-  {
+  if (!propIndices[column] > 0) {
     throw new Error('Invalid column name.');
   }
 
@@ -643,8 +568,7 @@ function getMarketHistory(itemId, regionId, column)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function getMarketItems(refresh)
-{
+function getMarketItems(refresh) {
   var marketItemsEndpoint = 'https://crest-tq.eveonline.com/market/types/';
   var marketItemsResponse = JSON.parse(fetchUrl(marketItemsEndpoint));
 
@@ -654,18 +578,15 @@ function getMarketItems(refresh)
   var headers = ['Item Name', 'ID'];
   itemList.push(headers);
 
-  for (var currentPage = 1; currentPage <= totalPages; currentPage++)
-  {
+  for (var currentPage = 1; currentPage <= totalPages; currentPage++) {
     Logger.log('Processing page ' + currentPage);
     var marketItems = marketItemsResponse['items'];
-    for (var itemReference in marketItems)
-    {
+    for (var itemReference in marketItems) {
       var item = marketItems[itemReference];
       itemList.push([item['type']['name'], item['id']]);
     }
 
-    if (currentPage < totalPages)
-    {
+    if (currentPage < totalPages) {
       var nextEndpoint = marketItemsResponse['next']['href'];
       marketItemsResponse = JSON.parse(fetchUrl(nextEndpoint));
     }
@@ -683,83 +604,67 @@ function getMarketItems(refresh)
  * @param {regionId} regionId the region ID for the market to look up
  * @param {orderType} orderType this should be set to "sell" or "buy" orders
  */
-function getMarketJson(itemId, regionId, orderType)
-{
+function getMarketJson(itemId, regionId, orderType) {
   var marketData = null;
 
   // Validate incoming arguments
-  if (itemId == null)
-  {
+  if (itemId == null) {
     throw new Error("Item ID cannot be NULL.");
   }
-  else if (typeof(itemId) != "number")
-  {
-    throw new Error('Item ID must be a number. Instead found a(n) ' + typeof(itemId) + '.');
+  else if (typeof (itemId) != "number") {
+    throw new Error('Item ID must be a number. Instead found a(n) ' + typeof (itemId) + '.');
   }
-  else if (regionId == null || typeof(regionId) != "number")
-  {
+  else if (regionId == null || typeof (regionId) != "number") {
     throw new Error("Invalid Region ID");
   }
-  else if (orderType == null)
-  {
+  else if (orderType == null) {
     throw new Error("Order type cannot be NULL.");
   }
-  else if (typeof(orderType) != "string")
-  {
+  else if (typeof (orderType) != "string") {
     throw new Error('Order type must be a STRING value.');
   }
-  else if (orderType.toLowerCase() != 'sell' && orderType.toLowerCase() != 'buy')
-  {
+  else if (orderType.toLowerCase() != 'sell' && orderType.toLowerCase() != 'buy') {
     throw new Error('Order type must be set to "sell" or "buy".');
   }
-  else
-  {
+  else {
     orderType = orderType.toLowerCase();
-    
+
     // Setup variables for the market endpoint we want
-    var marketUrl = 
-        "https://esi.evetech.net/latest/markets/" + regionId + "/orders/?datasource=tranquility&order_type=" + orderType + "&type_id=" + itemId;
+    var marketUrl =
+      "https://esi.evetech.net/latest/markets/" + regionId + "/orders/?datasource=tranquility&order_type=" + orderType + "&type_id=" + itemId;
     Logger.log("Pulling market orders from url: " + marketUrl)
-    
-    try
-    {
+
+    try {
       // Make the call to get some market data
       marketData = eval(fetchUrl(marketUrl).getContentText())
     }
-    catch (unknownError)
-    {
+    catch (unknownError) {
       Logger.log(unknownError);
       var addressError = "Address unavailable:";
-      if (unknownError.message.slice(0, addressError.length) == addressError)
-      {
+      if (unknownError.message.slice(0, addressError.length) == addressError) {
         var maxRetries = 3;
-        
+
         // See if we can try again
-        if (retries <= maxRetries)
-        {
+        if (retries <= maxRetries) {
           retries++;
-          marketData = getMarketJson(itemId, regionId, orderType); 
+          marketData = getMarketJson(itemId, regionId, orderType);
         }
-        else
-        {
+        else {
           marketData = "";
-          for (i in unknownError)
-          {
+          for (i in unknownError) {
             marketData += i + ": " + unknownError[i] + "\n";
           }
         }
       }
-      else
-      {
+      else {
         marketData = "";
-        for (var i in unknownError)
-        {
+        for (var i in unknownError) {
           marketData += i + ": " + unknownError[i] + "\n";
         }
       }
     }
   }
-  
+
   return marketData;
 }
 
@@ -773,17 +678,15 @@ function getMarketJson(itemId, regionId, orderType)
  * @param {orderType} orderType this should be set to "sell" or "buy" orders
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value
  */
-function getMarketPrice(itemId, regionId, stationId, orderType, refresh)
-{
+function getMarketPrice(itemId, regionId, stationId, orderType, refresh) {
   return getStationMarketPrice(itemId, regionId, stationId, orderType, refresh);
 }
 
-function getCachedMarketPrice(itemId, regionId, stationId, orderType, refresh)
-{
+function getCachedMarketPrice(itemId, regionId, stationId, orderType, refresh) {
   var dataKey = "getCachedMarketPrice" + itemId + regionId + stationId + orderType;
   var r = gdoc_cache_instance.get(dataKey);
-  var three_hours = 60*60*3; //in seconds
-  if (refresh == true || r == null){
+  var three_hours = 60 * 60 * 3; //in seconds
+  if (refresh == true || r == null) {
     r = getStationMarketPrice(Number(itemId), Number(regionId), Number(stationId), orderType, refresh);
     gdoc_cache_instance.put(dataKey, r, three_hours);
   }
@@ -803,38 +706,30 @@ function getCachedMarketPrice(itemId, regionId, stationId, orderType, refresh)
  * @param {filters} filters (Optional) An array of filters to place on orders during processing.
  * @customfunction
  */
-function getMarketPriceList(itemIdList, regionId, stationId, orderType, refresh, filters)
-{
+function getMarketPriceList(itemIdList, regionId, stationId, orderType, refresh, filters) {
   var returnValues = [];
 
   // Only validate arguments within the context of this function
   // Further validation will occur inside getMarketPrice
-  if (itemIdList == null || typeof(itemIdList) != "object")
-  {
+  if (itemIdList == null || typeof (itemIdList) != "object") {
     throw new Error("Invalid Item list");
   }
-  else
-  {
-    for (var itemIndex = 0; itemIndex < itemIdList.length; itemIndex++)
-    {
+  else {
+    for (var itemIndex = 0; itemIndex < itemIdList.length; itemIndex++) {
       var itemId = itemIdList[itemIndex];
-      if (typeof(itemId) == "object")
-      {
+      if (typeof (itemId) == "object") {
         // This needs to be fixed before passing to getMarketPrice() function
-        if (itemId.length == 1)
-        {
+        if (itemId.length == 1) {
           // This is only a number
           itemId = Number(itemId);
         }
       }
-      
+
       // Make sure to handle blank cells accordingly
-      if (itemId > 0)
-      {
+      if (itemId > 0) {
         returnValues[itemIndex] = getMarketPrice(itemId, regionId, stationId, orderType.toLowerCase(), refresh, filters)
       }
-      else
-      {
+      else {
         returnValues[itemIndex] = "";
       }
     }
@@ -850,8 +745,7 @@ function getMarketPriceList(itemIdList, regionId, stationId, orderType, refresh,
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function getNPCCorporations(refresh)
-{
+function getNPCCorporations(refresh) {
   var npcCorpEndpoint = 'https://crest-tq.eveonline.com/corporations/npccorps/';
   var npcCorpJson = JSON.parse(fetchUrl(npcCorpEndpoint));
 
@@ -859,8 +753,7 @@ function getNPCCorporations(refresh)
 
   var outputList = [];
 
-  for (var npcCorpHandle in npcCorpList)
-  {
+  for (var npcCorpHandle in npcCorpList) {
     var npcCorp = npcCorpList[npcCorpHandle];
     outputList.push([npcCorp['name'], npcCorp['id']]);
   }
@@ -882,8 +775,7 @@ function getNPCCorporations(refresh)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function getNPCLoyaltyStore(corpId, refresh)
-{
+function getNPCLoyaltyStore(corpId, refresh) {
   var loyaltyStoreEndpoint = 'https://crest-tq.eveonline.com/corporations/' + corpId + '/loyaltystore/';
   var loyaltyStoreJson = JSON.parse(fetchUrl(loyaltyStoreEndpoint));
 
@@ -891,8 +783,7 @@ function getNPCLoyaltyStore(corpId, refresh)
 
   var tempList = [];
 
-  for (var entryHandle in loyaltyStoreListings)
-  {
+  for (var entryHandle in loyaltyStoreListings) {
     var loyaltyStoreListing = loyaltyStoreListings[entryHandle];
 
     var loyaltyItem = loyaltyStoreListing['item'];
@@ -908,19 +799,15 @@ function getNPCLoyaltyStore(corpId, refresh)
     var reqItemColumns = 3;
 
     var reqTempList = [];
-    for (var reqItems = 0; reqItems < reqItemLimit; reqItems++)
-    {
-      for (var columns = 0; columns < reqItemColumns; columns++)
-      {
+    for (var reqItems = 0; reqItems < reqItemLimit; reqItems++) {
+      for (var columns = 0; columns < reqItemColumns; columns++) {
         reqTempList.push('');
       }
     }
 
     var requiredItemList = loyaltyStoreListing['requiredItems'];
-    for (var itemNumber = 0; itemNumber < requiredItemList.length; itemNumber++)
-    {
-      if (itemNumber >= reqTempList.length / 1)
-      {
+    for (var itemNumber = 0; itemNumber < requiredItemList.length; itemNumber++) {
+      if (itemNumber >= reqTempList.length / 1) {
         break;
       }
 
@@ -948,12 +835,9 @@ function getNPCLoyaltyStore(corpId, refresh)
   var returnArray = [];
   var headers = ['Item Name', 'ID', 'Qty', 'LP Cost', 'ISK Cost'];
   var reqHeaders = [];
-  for (var reqItems = 0; reqItems < reqItemLimit; reqItems++)
-  {
-    for (var columns = 0; columns < reqItemColumns; columns++)
-    {
-      switch (columns)
-      {
+  for (var reqItems = 0; reqItems < reqItemLimit; reqItems++) {
+    for (var columns = 0; columns < reqItemColumns; columns++) {
+      switch (columns) {
         case 0:
           reqHeaders.push('Required Item ' + (reqItems + 1));
           break;
@@ -983,35 +867,29 @@ function getNPCLoyaltyStore(corpId, refresh)
  * @param {filters} filters (Optional) An array of filters to place on orders during processing.
  * @customfunction
  */
-function getOrders(itemId, regionId, orderType, refresh, filters)
-{
+function getOrders(itemId, regionId, orderType, refresh, filters) {
   var orderOptions = [
     ['itemId', itemId],
     ['regionId', regionId],
     ['orderType', orderType.toLowerCase()],
     ['refresh', refresh]
   ];
-  
-  if (filters != null)
-  {
-    for (var row = 0; row < filters.length; row++)
-    {
-      if (filters[row].length > 1)
-      {
+
+  if (filters != null) {
+    for (var row = 0; row < filters.length; row++) {
+      if (filters[row].length > 1) {
         orderOptions.push(filters[row]);
       }
-      else
-      {
+      else {
         orderOptions.push(filters);
       }
     }
   }
 
-  if (orderType.toLowerCase() == 'buy')
-  {
+  if (orderType.toLowerCase() == 'buy') {
     orderOptions.push(['sortOrder', -1]);
   }
-  
+
   return getOrdersAdv(orderOptions);
 }
 
@@ -1022,8 +900,7 @@ function getOrders(itemId, regionId, orderType, refresh, filters)
  * @param {options} options See README in GitHub repo.
  * @customfunction
  */
-function getOrdersAdv(options)
-{
+function getOrdersAdv(options) {
   var itemId = null;
   var regionId = null;
   var orderType = null;
@@ -1039,103 +916,80 @@ function getOrdersAdv(options)
 
   var sortOrderSet = false;
 
-  if (options.length <= 0)
-  {
+  if (options.length <= 0) {
     throw new Error("No options found");
   }
-  else if (options[0] == null || options[0].length < 2)
-  {
+  else if (options[0] == null || options[0].length < 2) {
     throw new Error("Options must have 2 columns");
   }
 
-  for (var row = 0; row < options.length; row++)
-  {
-    for (var col = 0; col < options[row].length; col++)
-    {
+  for (var row = 0; row < options.length; row++) {
+    for (var col = 0; col < options[row].length; col++) {
       var optionKey = options[row][col];
       var optionValue = options[row][++col];
-      if (optionValue === '')
-      {
+      if (optionValue === '') {
         continue;
       }
-      else if (optionKey == 'headers')
-      {
+      else if (optionKey == 'headers') {
         showHeaders = optionValue;
       }
-      else if (optionKey == 'itemId')
-      {
+      else if (optionKey == 'itemId') {
         itemId = optionValue;
       }
-      else if (optionKey == 'regionId')
-      {
+      else if (optionKey == 'regionId') {
         regionId = optionValue;
       }
-      else if (optionKey == 'orderType')
-      {
+      else if (optionKey == 'orderType') {
         orderType = optionValue.toLowerCase();
       }
-      else if (optionKey == 'showOrderId')
-      {
+      else if (optionKey == 'showOrderId') {
         showOrderId = optionValue;
       }
-      else if (optionKey == 'showStationId')
-      {
+      else if (optionKey == 'showStationId') {
         showStationId = optionValue;
       }
-      else if (optionKey == 'sortIndex')
-      {
+      else if (optionKey == 'sortIndex') {
         sortIndex = optionValue;
       }
-      else if (optionKey == 'sortOrder')
-      {
+      else if (optionKey == 'sortOrder') {
         sortOrder = optionValue;
         sortOrderSet = true;
       }
-      else if (optionKey == 'stationId')
-      {
+      else if (optionKey == 'stationId') {
         stationId = optionValue;
       }
-      else if (optionKey == 'minPrice')
-      {
+      else if (optionKey == 'minPrice') {
         minPrice = optionValue;
       }
-      else if (optionKey == 'maxPrice')
-      {
+      else if (optionKey == 'maxPrice') {
         maxPrice = optionValue;
       }
-      else if (optionKey == 'minVolume')
-      {
+      else if (optionKey == 'minVolume') {
         minVolume = optionValue;
       }
-      else if (optionKey == 'maxVolume')
-      {
+      else if (optionKey == 'maxVolume') {
         maxVolume = optionValue;
       }
     }
   }
 
-  if (itemId == null)
-  {
+  if (itemId == null) {
     throw new Error('No "itemId" option found');
   }
-  else if (regionId == null)
-  {
+  else if (regionId == null) {
     throw new Error('No "regionId" option found');
   }
-  else if (orderType == null)
-  {
+  else if (orderType == null) {
     throw new Error('No "orderType" option found');
   }
 
-  if (sortOrderSet == false && orderType == 'buy')
-  {
+  if (sortOrderSet == false && orderType == 'buy') {
     sortOrder = -1;
   }
 
   var headers = ['Issued', 'Price', 'Volume'];
   var locationColumn, minVolumeColumn, orderIdColumn, rangeColumn, stationIdColumn;
-  if (orderType == 'buy')
-  {
+  if (orderType == 'buy') {
     minVolumeColumn = headers.length;
     headers.push('Min Volume');
     rangeColumn = headers.length;
@@ -1143,112 +997,97 @@ function getOrdersAdv(options)
   }
   locationColumn = headers.length;
   headers.push('Location');
-  if (showStationId == true)
-  {
+  if (showStationId == true) {
     stationIdColumn = headers.length;
     headers.push('Station ID');
   }
-  if (showOrderId == true)
-  {
+  if (showOrderId == true) {
     orderIdColumn = headers.length;
     headers.push('Order ID');
   }
 
   var marketReturn = [];
 
-  if (showHeaders == true)
-  {
+  if (showHeaders == true) {
     marketReturn.push(headers);
   }
-  
+
   // Make the call to get all market data for this item
   var jsonMarket = getMarketJson(itemId, regionId, orderType);
   var marketItems = jsonMarket;
-  
+
   // Convert all data to an array for proper output
   var outputArray = [];
-  for (var rowkey in marketItems)
-  {
+  for (var rowkey in marketItems) {
     rowData = marketItems[rowkey]
-//    Logger.log("getOrdersAdv : parsing order : " + rowData)
+    //    Logger.log("getOrdersAdv : parsing order : " + rowData)
     var saveRow = true;
     var newRow = [];
-    for (var colKey in rowData)
-    {
-//      Logger.log("colKey = " + colKey)
-      if (colKey == 'order_id' && showOrderId == true)
-      {
-//        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
+    for (var colKey in rowData) {
+      //      Logger.log("colKey = " + colKey)
+      if (colKey == 'order_id' && showOrderId == true) {
+        //        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
         newRow[orderIdColumn] = rowData[colKey];
       }
-//      else if (colKey == 'issued')
-//      {
-//        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
-//        var dateValues = rowData[colKey].split(/[T-]/);
-//        var dateString = dateValues.slice(0,3).join('/') + ' ' + dateValues[3];
-//        Logger.log("Converting date string: " + dateString);
-//        newRow[0] = new Date(dateString);
-//      }
-      else if (colKey == 'min_volume' && orderType == 'buy')
-      {
-//        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
+      //      else if (colKey == 'issued')
+      //      {
+      //        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
+      //        var dateValues = rowData[colKey].split(/[T-]/);
+      //        var dateString = dateValues.slice(0,3).join('/') + ' ' + dateValues[3];
+      //        Logger.log("Converting date string: " + dateString);
+      //        newRow[0] = new Date(dateString);
+      //      }
+      else if (colKey == 'min_volume' && orderType == 'buy') {
+        //        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
         newRow[minVolumeColumn] = rowData[colKey];
       }
-      else if (colKey == 'price')
-      {
-//        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
+      else if (colKey == 'price') {
+        //        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
         var orderPrice = rowData[colKey];
-        if (minPrice != null && orderPrice < minPrice)
-        {
+        if (minPrice != null && orderPrice < minPrice) {
           saveRow = false;
         }
-        if (maxPrice != null && orderPrice > maxPrice)
-        {
+        if (maxPrice != null && orderPrice > maxPrice) {
           saveRow = false;
         }
         newRow[1] = orderPrice;
       }
-      else if (colKey == 'range' && orderType == 'buy')
-      {
-//        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
+      else if (colKey == 'range' && orderType == 'buy') {
+        //        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
         newRow[rangeColumn] = rowData[colKey];
       }
-      else if (colKey == 'volume_remain')
-      {
-//        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
+      else if (colKey == 'volume_remain') {
+        //        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
         var orderVolume = rowData[colKey];
-        if (minVolume != null && orderVolume < minVolume)
-        {
+        if (minVolume != null && orderVolume < minVolume) {
           saveRow = false;
         }
-        if (maxVolume != null && orderVolume > maxVolume)
-        {
+        if (maxVolume != null && orderVolume > maxVolume) {
           saveRow = false;
         }
-        
+
         newRow[2] = orderVolume;
       }
-//      else if (colKey == 'location_id')
-//      {
-//        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
-//        var locationData = rowData[colKey];
-//        newRow[locationColumn] = locationData['name'];
-//        
-//        if (stationId != null && stationId != locationData['id'])
-//        {
-//          saveRow = false;
-//          break;
-//        }
-//        
-//        if (showStationId == true)
-//        {
-//          newRow[stationIdColumn] = locationData['id'];
-//        }
-//      }
+      //      else if (colKey == 'location_id')
+      //      {
+      //        Logger.log("getOrdersAdv : found " + colKey + " = " + rowData[colKey])
+      //        var locationData = rowData[colKey];
+      //        newRow[locationColumn] = locationData['name'];
+      //        
+      //        if (stationId != null && stationId != locationData['id'])
+      //        {
+      //          saveRow = false;
+      //          break;
+      //        }
+      //        
+      //        if (showStationId == true)
+      //        {
+      //          newRow[stationIdColumn] = locationData['id'];
+      //        }
+      //      }
     }
 
-    if (saveRow)
-    {
+    if (saveRow) {
       outputArray.push(newRow);
     }
   }
@@ -1269,8 +1108,7 @@ function getOrdersAdv(options)
  * @param {filters} filters (Optional) An array of filters to place on orders during processing.
  * @customfunction
  */
-function getRegionMarketPrice(itemId, regionId, orderType, refresh, filters)
-{
+function getRegionMarketPrice(itemId, regionId, orderType, refresh, filters) {
   var orderOptions = [
     ['itemId', itemId],
     ['regionId', regionId],
@@ -1278,39 +1116,32 @@ function getRegionMarketPrice(itemId, regionId, orderType, refresh, filters)
     ['refresh', refresh],
     ['headers', false]
   ];
-  
-  if (filters != null)
-  {
-    for (var row = 0; row < filters.length; row++)
-    {
-      if (filters[row].length > 1)
-      {
+
+  if (filters != null) {
+    for (var row = 0; row < filters.length; row++) {
+      if (filters[row].length > 1) {
         orderOptions.push(filters[row]);
       }
-      else
-      {
+      else {
         orderOptions.push(filters);
       }
       console.log("orderOptions : " + orderOptions)
     }
   }
 
-  if (orderType.toLowerCase() == 'buy')
-  {
+  if (orderType.toLowerCase() == 'buy') {
     orderOptions.push(['sortOrder', -1]);
   }
-  
+
   var orderData = getOrdersAdv(orderOptions);
 
-  if (orderData == null)
-  {
+  if (orderData == null) {
     throw new Error('Order data came back NULL');
   }
-  else if (orderData.length <= 0 || orderData[0] == null)
-  {
+  else if (orderData.length <= 0 || orderData[0] == null) {
     orderData.push(['', 0]);
   }
-  
+
   SpreadsheetApp.flush();
   return orderData[0][1];
 }
@@ -1322,16 +1153,14 @@ function getRegionMarketPrice(itemId, regionId, orderType, refresh, filters)
  * @param {refresh} refresh (Optional) Change this value to force Google to refresh return value.
  * @customfunction
  */
-function getRegions(refresh)
-{
+function getRegions(refresh) {
   var regionsEndpoint = 'https://crest-tq.eveonline.com/regions/';
   var regionsData = JSON.parse(fetchUrl(regionsEndpoint));
   var regionItems = regionsData['items'];
   var regionList = [];
   var headers = ['Name', 'ID'];
   regionList.push(headers);
-  for (var rowKey in regionItems)
-  {
+  for (var rowKey in regionItems) {
     var region = regionItems[rowKey];
     regionList.push([region['name'], region['id']]);
   }
@@ -1350,8 +1179,7 @@ function getRegions(refresh)
  * @param {filters} filters (Optional) An array of filters to place on orders during processing.
  * @customfunction
  */
-function getStationMarketPrice(itemId, regionId, stationId, orderType, refresh, filters)
-{
+function getStationMarketPrice(itemId, regionId, stationId, orderType, refresh, filters) {
   var orderOptions = [
     ['itemId', itemId],
     ['regionId', regionId],
@@ -1361,37 +1189,30 @@ function getStationMarketPrice(itemId, regionId, stationId, orderType, refresh, 
     ['headers', false]
   ];
 
-  if (filters != null)
-  {
-    for (var row = 0; row < filters.length; row++)
-    {
-      if (filters[row].length > 1)
-      {
+  if (filters != null) {
+    for (var row = 0; row < filters.length; row++) {
+      if (filters[row].length > 1) {
         orderOptions.push(filters[row]);
       }
-      else
-      {
+      else {
         orderOptions.push(filters);
       }
     }
   }
 
-  if (orderType.toLowerCase() == 'buy')
-  {
+  if (orderType.toLowerCase() == 'buy') {
     orderOptions.push(['sortOrder', -1]);
   }
-  
+
   var orderData = getOrdersAdv(orderOptions);
 
-  if (orderData == null)
-  {
+  if (orderData == null) {
     throw new Error('Order data came back NULL');
   }
-  else if (orderData.length <= 0 || orderData[0] == null)
-  {
+  else if (orderData.length <= 0 || orderData[0] == null) {
     orderData.push(['', 0]);
   }
-  
+
   SpreadsheetApp.flush();
   return orderData[0][1];
 }
@@ -1401,9 +1222,8 @@ function getStationMarketPrice(itemId, regionId, stationId, orderType, refresh, 
  * This function will run when the spreadsheet loads and perform the following:
  * 1) Request the current version from Github and inform the user of new versions
  */
-function onOpen()
-{
-  var submenus = [{name: 'Check for updates', functionName: 'versionCheck'}];
+function onOpen() {
+  var submenus = [{ name: 'Check for updates', functionName: 'versionCheck' }];
   SpreadsheetApp.getActiveSpreadsheet().addMenu("GCS", submenus);
 }
 
@@ -1411,20 +1231,17 @@ function onOpen()
 /**
  * Private helper function that will check for a new version of GCS.
  */
-function versionCheck()
-{
+function versionCheck() {
   var versionEndpoint = 'https://raw.githubusercontent.com/nuadi/googlecrestscript/master/version';
   var newVersion = fetchUrl(versionEndpoint);
 
-  if (newVersion != null)
-  {
+  if (newVersion != null) {
     newVersion = newVersion.getContentText().trim();
     Logger.log('Current version from Github: ' + newVersion);
 
     var message = 'You are using the latest version of GCS. Fly safe. o7';
     var title = 'No updates found';
-    if (newVersion > version)
-    {
+    if (newVersion > version) {
       message = 'A new version of GCS is available on GitHub.';
       title = 'GCS version ' + newVersion + ' available!';
     }

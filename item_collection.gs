@@ -1,18 +1,18 @@
 
-function tab_print(tab, prefix = ""){
-  if (tab === undefined){
+function tab_print(tab, prefix = "") {
+  if (tab === undefined) {
     Logger.log(prefix + "undefined");
     return;
   }
   var str = prefix + "[";
   if (tab.length > 0) str += tab[0];
-  for (var i = 1 ; i < tab.length ; i ++)
+  for (var i = 1; i < tab.length; i++)
     str += ", " + tab[i];
   str += "]";
   Logger.log(str);
 }
 
-function tab_print_2d(tab, prefix = ""){
+function tab_print_2d(tab, prefix = "") {
   for (var i in tab) tab_print(tab[i], prefix);
 }
 
@@ -30,16 +30,16 @@ function ItemCollection() {
   // merge add operations adds values for items that are already referenced in collection.
   // non-merge add operations appends item at the end of the list (allowing to append an empty line for example)
 
-  this.add_item = function(item_entry){
+  this.add_item = function (item_entry) {
     Logger.log("ItemCollection.add_item(item_entry) : ")
-    Logger.log("  item_entry : ",item_entry)
+    Logger.log("  item_entry : ", item_entry)
     this.ItemEntry_array.push(item_entry.deepcopy())
-    this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length -1;
+    this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length - 1;
   }
-  this.merge_add_item = function(item_entry){
-    if (this.lookup_table[item_entry.item_name()] == undefined){
+  this.merge_add_item = function (item_entry) {
+    if (this.lookup_table[item_entry.item_name()] == undefined) {
       this.ItemEntry_array.push(item_entry.deepcopy());
-      this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length -1;
+      this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length - 1;
     }
     else {
       this.ItemEntry_array[this.lookup_table[item_entry.item_name()]].merge_add(item_entry);
@@ -47,25 +47,25 @@ function ItemCollection() {
   }
 
   // add_array : 
-  this.add_array = function(ItemEntry_array){
+  this.add_array = function (ItemEntry_array) {
     for (const i in ItemEntry_array) { this.add_item(ItemEntry_array[i]); };
   }
-  this.merge_add_array = function(ItemEntry_array){
+  this.merge_add_array = function (ItemEntry_array) {
     for (const i in ItemEntry_array) { this.merge_add_item(ItemEntry_array[i]); };
   }
 
   // add_collection : 
-  this.add_collection = function(item_collection){
-    this.add_array(item_collection.ItemEntry_array); 
+  this.add_collection = function (item_collection) {
+    this.add_array(item_collection.ItemEntry_array);
   }
-  this.merge_add_collection = function(item_collection){
+  this.merge_add_collection = function (item_collection) {
     this.merge_add_array(item_collection.ItemEntry_array);
   }
   // merge_sub_item : 
-  this.merge_sub_item = function(item_entry){
-    if (this.lookup_table[item_entry.item_name()] == undefined){
+  this.merge_sub_item = function (item_entry) {
+    if (this.lookup_table[item_entry.item_name()] == undefined) {
       this.ItemEntry_array.push(item_entry.deepcopy());
-      this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length -1;
+      this.lookup_table[item_entry.item_name()] = this.ItemEntry_array.length - 1;
     }
     else {
       this.ItemEntry_array[this.lookup_table[item_entry.item_name()]].merge_sub(item_entry);
@@ -73,90 +73,90 @@ function ItemCollection() {
   }
 
   // merge_sub_array : 
-  this.merge_sub_array = function(ItemEntry_array){
+  this.merge_sub_array = function (ItemEntry_array) {
     for (const i in ItemEntry_array) { this.merge_sub_item(ItemEntry_array[i]); };
   }
 
   // merge_sub_collection : 
-  this.merge_sub_collection = function(item_collection){
-    this.merge_sub_array(item_collection.ItemEntry_array); 
+  this.merge_sub_collection = function (item_collection) {
+    this.merge_sub_array(item_collection.ItemEntry_array);
   }
-  
+
   // asValues : get as 2d array to be used with Range.setValues()
-  this.asValues = function(columns_names_array, dimrows, dimcols){
+  this.asValues = function (columns_names_array, dimrows, dimcols) {
     if (dimrows === undefined) dimrows = this.ItemEntry_array.length;
     if (dimcols === undefined) {
-      if (columns_names_array == undefined){
+      if (columns_names_array == undefined) {
         dimcols = 0;
-        
+
         for (const i in this.ItemEntry_array)
           dimcols = Math.max(dimcols, Object.keys(this.ItemEntry_array[i].data).length);
       }
       else dimcols = columns_names_array.length;
     }
     var r = [];
-    for (var i = 0 ; i < dimrows ; i ++){
-      if (i < this.ItemEntry_array.length){
-        
+    for (var i = 0; i < dimrows; i++) {
+      if (i < this.ItemEntry_array.length) {
+
         r.push(this.ItemEntry_array[i].asValues(columns_names_array, dimcols));
       }
       else {
         var row = [];
-        for (var j = 0 ; j < dimcols ; j++) row.push("");
+        for (var j = 0; j < dimcols; j++) row.push("");
         r.push(row);
       }
     }
     return r;
   }
-  
+
   // removes from the list
-  this.filter_array = function(ItemEntry_array){
+  this.filter_array = function (ItemEntry_array) {
     var i = 0;
-    while (i < this.ItemEntry_array.length){
+    while (i < this.ItemEntry_array.length) {
       var remove_flag = true;
-      for (const j in ItemEntry_array){
-        if (this.ItemEntry_array[i].data[key_column_name] == ItemEntry_array[j].data[key_column_name]){
+      for (const j in ItemEntry_array) {
+        if (this.ItemEntry_array[i].data[key_column_name] == ItemEntry_array[j].data[key_column_name]) {
           remove_flag = false;
           break;
         }
       }
-      if (remove_flag){
+      if (remove_flag) {
         delete this.lookup_table[this.ItemEntry_array[i].data[key_column_name]];
-        this.ItemEntry_array.splice(i,1);
+        this.ItemEntry_array.splice(i, 1);
       }
       else i++;
     }
   }
-  this.filter_collection = function(item_collection){
+  this.filter_collection = function (item_collection) {
     this.filter_array(item_collection.ItemEntry_array);
   }
-  
+
   // merge duplicates
-  this.deduped = function(){
+  this.deduped = function () {
     r = new ItemCollection();
     r.merge_add_collection(this)
     return r;
   }
-  
+
   // remove empty lines
-  this.cleanup = function(cnames = undefined){
+  this.cleanup = function (cnames = undefined) {
     var i = 0;
-    while (i < this.ItemEntry_array.length){
-      if (this.ItemEntry_array[i].isEmpty(cnames)){
-        this.ItemEntry_array.splice(i,1);
+    while (i < this.ItemEntry_array.length) {
+      if (this.ItemEntry_array[i].isEmpty(cnames)) {
+        this.ItemEntry_array.splice(i, 1);
       }
-      else{
+      else {
         i++;
       }
     }
     this.lookup_table = new Object();
-    for (const i in this.ItemEntry_array){
+    for (const i in this.ItemEntry_array) {
       this.lookup_table[this.ItemEntry_array[i].data[key_column_name]] = i;
     }
   }
-    
+
   // deepcopy
-  this.deepcopy = function(aObject){
+  this.deepcopy = function (aObject) {
     if (!aObject) {
       return this.deepcopy(this);
     }
@@ -167,14 +167,14 @@ function ItemCollection() {
     }
     return bObject;
   }
-  
+
   // printer
-  this.log = function(cnames, prefix=""){
-    if (this.ItemEntry_array.length == 0){
+  this.log = function (cnames, prefix = "") {
+    if (this.ItemEntry_array.length == 0) {
       Logger.log(prefix + "empty collection");
       return;
     }
-    if (! cnames) Logger.log("(undefined cnames)");
+    if (!cnames) Logger.log("(undefined cnames)");
     else tab_print(cnames, prefix);
     tab_print_2d(this.asValues(cnames), prefix);
   }
@@ -188,9 +188,9 @@ function ItemCollection_from_items_array(ItemEntry_array = []) {
 }
 
 // helper ItemCollection constructor : from an array of values as acquired through Range.getValues()
-function ItemCollection_from_values_array(values_2d_array , columns_names_array) {
+function ItemCollection_from_values_array(values_2d_array, columns_names_array) {
   var ItemEntry_array = [];
-  for (const i in values_2d_array){
+  for (const i in values_2d_array) {
     ItemEntry_array.push(new ItemEntry_from_values(values_2d_array[i], columns_names_array));
   }
   ItemCollection_from_items_array.call(this, ItemEntry_array);
@@ -201,35 +201,35 @@ function ItemCollection_from_values_array(values_2d_array , columns_names_array)
 // ### test ###
 
 
-function test(){
+function test() {
   Logger.log("test : ");
 
   var cnames = [key_column_name, "1", "2", "3"];
-  var vals1 =  ["item1", 1, 2, 3];
-  var vals2 =  ["item2", 2, 2, 0];
-  var vals3 =  ["item3", 2, 0, -1];
-  var vals4 =  ["item2", 2, 100, 0];
-  var vals5 =  ["item4", 0, 0, 15];
-  
+  var vals1 = ["item1", 1, 2, 3];
+  var vals2 = ["item2", 2, 2, 0];
+  var vals3 = ["item3", 2, 0, -1];
+  var vals4 = ["item2", 2, 100, 0];
+  var vals5 = ["item4", 0, 0, 15];
+
   var i1 = new ItemEntry_from_values(vals1, cnames);
   Logger.log("  - i1 created : ");
   Logger.log("  i1.asValues = " + i1.asValues());
   // Logger.log("  i1 = " + i1);
   // for (const k in i1){ Logger.log("    -> " + k + " : " + i1[k]); }
   Logger.log("  i1.data : ")
-  for (const i in i1.data){ Logger.log("     -> \"" + k + "\" : " + i1.data[i]); }
-  
+  for (const i in i1.data) { Logger.log("     -> \"" + k + "\" : " + i1.data[i]); }
+
   var valsa = [vals1, vals2, vals3];
   var c1 = new ItemCollection_from_values_array(valsa, cnames);
   Logger.log("  -- c1 -- (with cnames)");
   c1.log(cnames, "  ");
   Logger.log("  -- c1 -- (without cnames)");
   c1.log(undefined, "  ");
-  
+
   var c2 = new ItemCollection_from_values_array([vals4, vals5], cnames);
   Logger.log("  -- c2 -- ");
   c2.log(cnames, "  ");
-  
+
   var c3 = c1.deepcopy();
   c3.merge_add_collection(c2);
   Logger.log("  -- c3 -- ");
@@ -245,10 +245,10 @@ function test(){
   c4.cleanup([key_column_name, 3]);
   Logger.log("  -- c4 -- (cleaned up using cnames [key_column_name, 3])");
   c4.log(cnames, "  ");
-  
+
   var c5 = c3.deepcopy();
   c5.filter_collection(c2);
   Logger.log("  -- c5 -- ");
   c5.log(cnames, "  ");
-  
+
 }
