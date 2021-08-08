@@ -12,17 +12,17 @@ function testCREST() {
   var itemId = 44992;
   var regionId = 10000002;
   var stationId = 60003760;
-  
-  try{
-    
+
+  try {
+
     var price = getMarketPrice(itemId, regionId, stationId, "SELL");
     Logger.log(price)
     price = getMarketPrice(itemId, regionId, stationId, "BUY");
     Logger.log(price)
-    
+
   } catch (e) {
     return false;
   }
-  
+
   return true;
 }

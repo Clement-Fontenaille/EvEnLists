@@ -85,7 +85,10 @@ function request_aggregator(trade_hub = request_aggregator_default_hub, bufferin
     if (!this.exec_pending) {
       this.exec_pending = true;
       // setTimeout(this.execute_request, buffering_time);
-      ScriptApp.newTrigger("rag.execute_request").timeBased().after(1000*this.buffering_time).create()
+      callbackName="console.log";
+      // callbackName="rag.execute_request"
+      ScriptApp.newTrigger("console.log").timeBased().after(1000*this.buffering_time).create();
+      Logger.log("installed trigger : " + callbackName + " after " + 1000*this.buffering_time + " ms");
     }
     if (item_id in requested) {
       requested[item_id].hubs_list = Array(Set(trade_hubs_list.concat(requested[item_id].hubs_list.split("+")))).sort().join("+");
@@ -153,7 +156,7 @@ function blocking_get(item_id, trade_hub, local_cache_getter) {
     r = local_cache_getter(item_id, trade_hub);
     if (r != undefined) return r;
     rag.append_request(item_id, trade_hub)
-    sleep(rag.buffering_time);
+    sleep(rag.buffering_time / 10000);
   }
   return undefined;
 }
@@ -181,9 +184,9 @@ function mysettimeout(ms) {
   return new Promise(function (resolve, reject) { console.log("mysettimeout : sleeping for " + ms + " ms"); utilities.sleep(ms); console.log("done sleeping"); resolve(); });
 }
 
-function test() {
+function EvEiF_AggregatedPrices_test() {
 
-  Logger.log(getEstimatedPriceFromEFT("[Eos, Simulated Eos Fitting]\nDrone Damage Amplifier II\nDrone Damage Amplifier II\nImperial Navy 1600mm Steel Plates\nDamage Control II\nTrue Sansha Explosive Armor Hardener\nDark Blood Multispectrum Energized Membrane\nMultispectrum Energized Membrane II\n\nPhased Scoped Target Painter\nRemote Sensor Booster II\nOmnidirectional Tracking Link II\n10MN Afterburner II\n\nArmor Command Burst II\nArmor Command Burst II\nCore Probe Launcher I\nDual 150mm Railgun II\nDual 150mm Railgun II\n\nMedium EM Armor Reinforcer II\nMedium Explosive Armor Reinforcer II\n\n\n\nWarrior II x5\nHammerhead II x5\nValkyrie II x5\nPraetor II x5\n\nJavelin M x558\nECCM Script x1\nSpike M x2400\nOptimal Range Script x1\nTracking Speed Script x1\nTargeting Range Script x1\nCaldari Navy Antimatter Charge M x1500\nArmor Reinforcement Charge x600\nScan Resolution Script x1\nWarp Scrambler II x1\nSensor Booster II x1\nStasis Webifier II x1\nWarp Disruptor II x1\nDrone Link Augmentor I x1\n\n"));
+  //Logger.log(getEstimatedPriceFromEFT("[Eos, Simulated Eos Fitting]\nDrone Damage Amplifier II\nDrone Damage Amplifier II\nImperial Navy 1600mm Steel Plates\nDamage Control II\nTrue Sansha Explosive Armor Hardener\nDark Blood Multispectrum Energized Membrane\nMultispectrum Energized Membrane II\n\nPhased Scoped Target Painter\nRemote Sensor Booster II\nOmnidirectional Tracking Link II\n10MN Afterburner II\n\nArmor Command Burst II\nArmor Command Burst II\nCore Probe Launcher I\nDual 150mm Railgun II\nDual 150mm Railgun II\n\nMedium EM Armor Reinforcer II\nMedium Explosive Armor Reinforcer II\n\n\n\nWarrior II x5\nHammerhead II x5\nValkyrie II x5\nPraetor II x5\n\nJavelin M x558\nECCM Script x1\nSpike M x2400\nOptimal Range Script x1\nTracking Speed Script x1\nTargeting Range Script x1\nCaldari Navy Antimatter Charge M x1500\nArmor Reinforcement Charge x600\nScan Resolution Script x1\nWarp Scrambler II x1\nSensor Booster II x1\nStasis Webifier II x1\nWarp Disruptor II x1\nDrone Link Augmentor I x1\n\n"));
 
 
   console.log("Hello !")
