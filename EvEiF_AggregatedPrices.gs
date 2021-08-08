@@ -84,7 +84,8 @@ function request_aggregator(trade_hub = request_aggregator_default_hub, bufferin
 
     if (!this.exec_pending) {
       this.exec_pending = true;
-      setTimeout(this.execute_request, buffering_time);
+      // setTimeout(this.execute_request, buffering_time);
+      ScriptApp.newTrigger("rag.execute_request").timeBased().after(1000*this.buffering_time).create()
     }
     if (item_id in requested) {
       requested[item_id].hubs_list = Array(Set(trade_hubs_list.concat(requested[item_id].hubs_list.split("+")))).sort().join("+");
