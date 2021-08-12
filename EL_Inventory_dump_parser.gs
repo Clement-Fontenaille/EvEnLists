@@ -407,7 +407,7 @@ function getEstimatedPriceFromEFT(EFTstring) {
     total_estimated_price += lines[i].EstPrice * lines[i].Qty;
   }
 
-  return total_estimated_price
+  return total_estimated_price;
 
 }
 

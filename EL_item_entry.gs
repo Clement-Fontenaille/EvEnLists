@@ -82,16 +82,16 @@ function ItemEntry() {
 
   this.log = function (cnames, prefix = "", display_cnames = true) {
     if (!cnames) cnames = Object.keys(this.data);
-    if (display_cnames) Logger.log(prefix + cnames)
-    m = "["
-    flag = false
+    if (display_cnames) Logger.log(prefix + cnames);
+    m = "[";
+    flag = false;
     for (const i in cnames) {
-      if (flag) m += ", "
-      m += this.data[cnames[i]]
-      flag = true
+      if (flag) m += ", ";
+      m += this.data[cnames[i]];
+      flag = true;
     }
-    m += "]"
-    Logger.log(prefix + m)
+    m += "]";
+    Logger.log(prefix + m);
   }
 }
 
